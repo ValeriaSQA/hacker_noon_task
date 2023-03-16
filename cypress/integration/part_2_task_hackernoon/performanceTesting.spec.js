@@ -1,17 +1,32 @@
+const { MainPage } = require('/cypress/support/page-objects/MainPage.js');
+const { BrokenPage } = require('/cypress/support/page-objects/BrokenPage.js');
+
 describe('Performance testing', () => {
-    it('should load the page in less than 2 seconds', () => {
-        cy.clock(); // start clock
+    it('Original production version - should load the production version in less than 4 seconds', () => {
+        const originalPage = new MainPage();
+        originalPage.goToMainPage();
+        cy.window().then((win) => {
+            const performance = win.performance
+            const navigationStart = performance.timing.navigationStart
+            const loadEventEnd = performance.timing.loadEventEnd
+            const loadTime = loadEventEnd - navigationStart
+            cy.log(`Page load time: ${loadTime}ms`)
+            expect(loadTime).to.be.lessThan(4000)
+        })
+        cy.get('h1[class="story-title"]').should('be.visible');
+    });
 
-        cy.visit('https://www.example.com'); // visit the website
-
-        cy.get('body').should('be.visible'); // make sure the page is visible
-
-        cy.tick(2000); // simulate 2 seconds of server response time
-
-        cy.get('body').should('be.visible'); // make sure the page is still visible
-
-        cy.clock().then(clock => {
-            expect(clock).to.be.lessThan(2000); // check that the page loaded in less than 2 seconds
-        });
+    it('Broken version - should not load the main content after 4 seconds', () => {
+        const brokenPage = new BrokenPage();
+        brokenPage.goToBrokenPage();
+        cy.window().then((win) => {
+            const performance = win.performance
+            const navigationStart = performance.timing.navigationStart
+            const loadEventEnd = performance.timing.loadEventEnd
+            const loadTime = loadEventEnd - navigationStart
+            cy.log(`Page load time: ${loadTime}ms`)
+            expect(loadTime).to.be.lessThan(4000)
+        })
+        cy.get('h1[class="story-title"]').should('not.exist');
     });
 });

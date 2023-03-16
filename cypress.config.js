@@ -6,6 +6,7 @@ module.exports = defineConfig({
       // implement node event listeners here
     },
     specPattern: "cypress/integration/part_2_task_hackernoon/*.js",
+    screenshotsFolder: "cypress/screenshots",
   },
 
   component: {
